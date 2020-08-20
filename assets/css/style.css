@@ -1,0 +1,92 @@
+body {
+	margin: 0;	
+	font-family: 'Manrope', sans-serif;
+	font-size: 16px;
+}
+
+.container {
+	padding: 20px;
+}
+
+.form-group {
+  margin-bottom: 10px;
+}
+.team-list {
+  max-width: 400px;
+}
+
+.team-list li {
+  display: flex;
+  justify-content: space-between;
+}
+.team-rating {
+  margin: 0 10px;
+  flex: 0 0 20%;
+}
+
+.team-title {
+  flex: 0 0 70%;
+}
+
+.game-row {
+	margin-bottom: 25px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-wrap: wrap;
+}
+
+.game-row span {
+	flex: 0 0 33.333%;
+}
+
+.game-row div {
+	flex: 0 0 100%;
+	margin-top: 10px;	
+}
+
+.lh-40 {
+	line-height: 40px;
+}
+
+.td-50 {
+	width: 50px;
+}
+
+.td-100 {
+	width: 100px;
+}
+
+.title.is-1 {
+	margin-top: 30px;
+}
+
+.title sup {
+	font-size: 0.3em;
+}
+
+.text-center {
+	text-align: center;
+}
+
+.text-right {
+	text-align: right;
+}
+
+#ranking {
+	counter-reset: ranking;
+}
+
+.count:before {
+	counter-increment: ranking;
+  content: counter(ranking);
+}
+
+.input.-rating {
+	max-width: 100px;
+}
+
+.input.-small {
+	max-width: 70px;
+	margin: 0 10px;
+}
