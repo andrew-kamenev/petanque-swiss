@@ -8,7 +8,7 @@ function createDB(){
   remoteCouch = false;
   db.createIndex({
   index: {
-    fields: ['rating', 'wins', 'buhgolts', 'points', 'games']
+    fields: ['rating', 'wins', 'buhgolts', 'buhgolts', 'points', 'games']
   }
 });
   dbResults.createIndex({
@@ -128,6 +128,22 @@ $(document).on('click', '[data-event="removeTeam"]', function(){
   })
   
   updateRound();
+}).on('click', '#importList', async function(){
+  const tournamentId = $('#tournamentId').val();
+  let response = await fetch(`http://portal.petanque.org.ua/tournament/team_export/${tournamentId}?format=json`);
+
+if (response.ok) {
+  
+  let importedList = await response.json();
+
+  $.each(importedList.teams,  function(index){
+      addTeam(importedList.teams[index].name, importedList.teams[index].power);
+  });
+
+
+} else {
+  alert("Ошибка HTTP: " + response.status);
+}
 });
 
 
@@ -233,7 +249,7 @@ function updateTeamRating(id, opponent, scoreSelf, scoreOpponent, win){
   } else {
 
     if(id != 'tech'){
-      let {_rev, rating, title, opponents, wins, buhgolts, points, wasTechnical} = doc;
+      let {_rev, rating, title, opponents, wins, buhgolts, mBuhgolts, points, wasTechnical} = doc;
     
       if(opponent === 'tech'){
         wasTechnical = true;
@@ -254,6 +270,7 @@ function updateTeamRating(id, opponent, scoreSelf, scoreOpponent, win){
       opponents: opponents,
       wins: wins,
       buhgolts: buhgolts,
+      mBuhgolts: mBuhgolts,
       points: points,
       wasTechnical: wasTechnical
 
@@ -295,6 +312,7 @@ function addTeam(title, rating) {
     opponents: [],
     wins: 0,
     buhgolts: 0,
+    mBuhgolts: 0,
     points: 0,
     wasTechnical: false
   };
@@ -324,13 +342,17 @@ function showTeams() {
 
 function showTeam(teams){
   $.each(teams, function(index){
-    $('#list').append(`<tr data-id="${teams[index]._id}"><td>${teams[index].title}</td><td class="td-100">${teams[index].rating}</td><td class="td-50"><a class="delete" data-event="removeTeam"></a></td></tr>`);
+    const id = teams[index]._id || teams[index].id;
+    const title = teams[index].title || teams[index].name;
+    const rating = teams[index].rating || teams[index].power;
+    $('#list').append(`<tr data-id="${id}"><td>${title}</td><td class="td-100">${rating}</td><td class="td-50"><a class="delete" data-event="removeTeam"></a></td></tr>`);
   })
 }
 
 
 function firstRound(){
   showRound();
+  $('#addTeam').hide();
 
   db.find({
     selector: {
@@ -386,19 +408,23 @@ function countTeamsBuhgolts(){
     teams.forEach(function(item, i){
  
       let currentBuhgolts = 0;
+      let currentMBuhgolts = 0;
 
       item.opponents.forEach(function(item, i){
 
         opponentWins = teams.find(obj => obj._id === item).wins;
+        opponentBuhgolts = teams.find(obj => obj._id === item).buhgolts;
 
         currentBuhgolts = currentBuhgolts + opponentWins;
+        currentMBuhgolts = currentMBuhgolts + opponentBuhgolts;
 
       })
       db.get(item._id).then(function(res){
        
-        let {_id, _rev, rating, title, opponents, wins, buhgolts, points, wasTechnical} = res;
+        let {_id, _rev, rating, title, opponents, wins, buhgolts, mBuhgolts, points, wasTechnical} = res;
         
         buhgolts = currentBuhgolts;
+        mBuhgolts = currentMBuhgolts;
         
         let doc = {
           _id: _id,
@@ -408,6 +434,7 @@ function countTeamsBuhgolts(){
           opponents: opponents,
           wins: wins,
           buhgolts: buhgolts,
+          mBuhgolts: mBuhgolts,
           points: points,
           wasTechnical: wasTechnical
         }
@@ -427,7 +454,7 @@ function countTeamsBuhgolts(){
       }).then(function(){
         db.createIndex({
     index: {
-      fields: ['wins', 'buhgolts', 'points', 'rating']
+      fields: ['wins', 'buhgolts', 'mBuhgolts', 'points', 'rating']
     }
   }).then(function (response) {
   
@@ -435,16 +462,18 @@ function countTeamsBuhgolts(){
       selector: {
         wins: { '$gte': null },
         buhgolts: { '$gte': null },
+        mBuhgolts: {'$gte': null},
         points: { '$gte': null },
         rating: { '$gte': null }
       },
-      sort: [{wins: 'desc'}, {buhgolts: 'desc'}, {points: 'desc'}, {rating: 'desc'}]
+      sort: [{wins: 'desc'}, {buhgolts: 'desc'}, {mBuhgolts: 'desc'}, {points: 'desc'}, {rating: 'desc'}]
     });
   }).then(function (response) {
     $('#ranking').html('')
+    console.log(response.docs);
     $.each(response.docs, function(index){
   
-    $('#ranking').append(`<tr data-id="${response.docs[index]._id}"><td><span class="count"></span></td>  <td>${response.docs[index].title}</td><td>${response.docs[index].wins}</td><td>${response.docs[index].buhgolts}</td><td>${response.docs[index].points}</td><td>${response.docs[index].rating}</td></tr>`);
+    $('#ranking').append(`<tr data-id="${response.docs[index]._id}"><td><span class="count"></span></td>  <td>${response.docs[index].title}</td><td>${response.docs[index].wins}</td><td>${response.docs[index].buhgolts}</td><td>${response.docs[index].mBuhgolts}</td><td>${response.docs[index].points}</td><td>${response.docs[index].rating}</td></tr>`);
   })
       });
 });
@@ -466,10 +495,11 @@ function nextRound() {
       selector: {
         wins: { '$gte': null },
         buhgolts: { '$gte': null },
+        mBuhgolts: { '$gte': null },
         points: { '$gte': null },
         rating: { '$gte': null }
       },
-      sort: [{wins: 'desc'}, {buhgolts: 'desc'}, {points: 'desc'}, {rating: 'desc'}]
+      sort: [{wins: 'desc'}, {buhgolts: 'desc'}, {mBuhgolts: 'desc'}, {points: 'desc'}, {rating: 'desc'}]
     });
   }).then(function (response) {
     
@@ -477,7 +507,7 @@ function nextRound() {
     $('#ranking').html('');
     $.each(response.docs, function(index){
   
-    $('#ranking').append(`<tr data-id="${response.docs[index]._id}"><td><span class="count"></span></td>  <td>${response.docs[index].title}</td><td>${response.docs[index].wins}</td><td>${response.docs[index].buhgolts}</td><td>${response.docs[index].points}</td><td>${response.docs[index].rating}</td></tr>`);
+    $('#ranking').append(`<tr data-id="${response.docs[index]._id}"><td><span class="count"></span></td>  <td>${response.docs[index].title}</td><td>${response.docs[index].wins}</td><td>${response.docs[index].buhgolts}</td><td>${response.docs[index].mBuhgolts}</td><td>${response.docs[index].points}</td><td>${response.docs[index].rating}</td></tr>`);
   })
     
     
