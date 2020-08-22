@@ -1,7 +1,7 @@
 body {
 	margin: 0;	
 	font-family: 'Manrope', sans-serif;
-	font-size: 16px;
+	font-size: 1rem;
 }
 
 .container {
@@ -89,4 +89,61 @@ body {
 .input.-small {
 	max-width: 70px;
 	margin: 0 10px;
+}
+
+.score-block {
+	display: flex;
+	justify-content: center;
+}
+
+.add-team-field.field.is-grouped>.control:first-child {
+	flex: 1 1 100%;
+}
+
+#list {
+	counter-reset: teamlist;
+}
+
+#list tr {
+	counter-increment: teamlist;
+}
+
+#list tr td:first-child:before {
+	content: counter(teamlist)". ";
+}
+
+@media screen and (max-width: 767px) {
+	html {
+		font-size: 14px;
+	}
+
+	.add-team-field {
+		flex-wrap: wrap;
+	}
+
+	.add-team-field.field.is-grouped>.control:first-child {
+		width: 100%;
+		margin-bottom: 1rem;
+
+	}
+
+	.td-50 {
+		width: 40px;
+	}
+
+	.td-100 {
+		width: 70px;
+	}
+
+	.game-row {
+		border-bottom: 1px solid #dbdbdb;
+		margin-bottom: 1rem;	
+	}
+
+	.game-row span {
+	    flex: 0 0 100%;
+	    text-align: center;
+	    justify-content: center;
+	    margin-bottom: 1rem;
+	}
 }

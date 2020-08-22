@@ -1,7 +1,24 @@
-const db = new PouchDB('tournament');
-const dbResults = new PouchDB('tournamentResults');
+let db, dbResults;
 
 let remoteCouch = false;
+
+function createDB(){
+  db = new PouchDB('tournament');
+  dbResults = new PouchDB('tournamentResults');
+  remoteCouch = false;
+  db.createIndex({
+  index: {
+    fields: ['rating', 'wins', 'buhgolts', 'points', 'games']
+  }
+});
+  dbResults.createIndex({
+    index: {
+      fields: ['round']
+    }
+  });
+}
+
+createDB();
 
 
 dbResults.get('currentMen').then(function (doc) {
@@ -39,8 +56,13 @@ $('#addTeam').on('click', function(){
 
 $('#removeList').on('click', function(){
   db.destroy();
-  dbResults.destroy();
+  dbResults.destroy().then(function () {
+  createDB();
+}).catch(function (err) {
+  console.log(err);
+});
   $('#list').html('');
+  
 });
 
 $('#drawRound').on('click', function(){
@@ -69,7 +91,8 @@ $(document).on('click', '[data-event="removeTeam"]', function(){
   $(this).closest('tr').remove();
   removeTeam(id);
 }).on('click', '[data-event="saveResult"]', function(){
-  const teams = $(this).closest('.game-row').find('input');
+  $('#games').find('.game-row').each(function(){
+    const teams = $(this).find('input');
   let validation = true;
 
   $.each(teams, function(index){
@@ -79,8 +102,7 @@ $(document).on('click', '[data-event="removeTeam"]', function(){
     const scoreSelf = parseInt($(teams[index]).val());
     const scoreOpponent = parseInt($(teams[sign]).val());
     const win = scoreSelf > scoreOpponent ? true : false;
-
-    if(!scoreSelf || !scoreOpponent){
+    if(!scoreSelf || !scoreOpponent || scoreOpponent === scoreSelf){
 
       validation = false
       return false;
@@ -101,10 +123,49 @@ $(document).on('click', '[data-event="removeTeam"]', function(){
       const teamScoreSecond = $(teams[1]).val();
     
     saveResulttoDB(teamTitleFirst, teamScoreFirst, teamScoreSecond, teamTitleSecond);
-    $(this).closest('.game-row').remove();
+    $(this).remove();
   }
+  })
+  
+  updateRound();
+});
+
+
+
+function updateRound(){
+  dbResults.get('currentMen', function(err, doc) {
+   if (err) {
+    return console.log(err);
+  } else {
+
+      let {_rev, men} = doc;
+    
+      men++;
+
+    doc = {
+      _id: 'currentMen',
+      _rev: _rev,
+      men: men
+    }
+
+    dbResults.put(doc);
+    }
   
 });
+}
+
+function showRound(){
+  dbResults.get('currentMen').then(function (doc) {
+
+ let {men} = doc;
+
+ $('#games').append(`<h2 class="text-center">Round ${men}</h2`);
+ 
+}).catch(function (err) {
+  
+   console.log(err)
+});
+}
 
 function saveResulttoDB(teamFirst, teamFirstScrore, teamSecond, teamSecondScore){
     
@@ -137,11 +198,7 @@ function saveResulttoDB(teamFirst, teamFirstScrore, teamSecond, teamSecondScore)
 
 }
 
-dbResults.createIndex({
-    index: {
-      fields: ['round']
-    }
-  });
+
 
 function showResults(){
 
@@ -249,11 +306,7 @@ function addTeam(title, rating) {
   $('#list').append(`<tr data-id="${team._id}"><td>${title}</td><td class="td-100">${rating}</td><td class="td-50"><a class="delete" data-event="removeTeam"></a></td></tr>`);
 }
 
-db.createIndex({
-  index: {
-    fields: ['rating', 'wins', 'buhgolts', 'points', 'games']
-  }
-});
+
 
 function showTeams() {
   db.find({
@@ -277,16 +330,7 @@ function showTeam(teams){
 
 
 function firstRound(){
-  dbResults.get('currentMen').then(function (doc) {
-
- let {men} = doc;
-
- $('#games').append(`<h2 class="text-center">Round ${men}</h2`);
- 
-}).catch(function (err) {
-  
-   console.log(err)
-});
+  showRound();
 
   db.find({
     selector: {
@@ -306,9 +350,8 @@ function firstRound(){
   
       $('#games').append(`<div class="game-row">
         <span class="text-right"><label for="${result.docs[i]._id}">${result.docs[i].title}</label></span>
-        <span class="text-center lh-40"><input class="input -small" type="number" id="${result.docs[i]._id}" data-id="${result.docs[i]._id}"/> vs <input class="input -small" type="number" id="${result.docs[teamsLength + i]._id}" data-id="${result.docs[teamsLength + i]._id}"/></span>
+        <span class="text-center lh-40 score-block"><input class="input -small" type="number" id="${result.docs[i]._id}" data-id="${result.docs[i]._id}"/> vs <input class="input -small" type="number" id="${result.docs[teamsLength + i]._id}" data-id="${result.docs[teamsLength + i]._id}"/></span>
         <span><label for="${result.docs[teamsLength + i]._id}">${result.docs[teamsLength + i].title}</label></span>
-        <div class="text-center"><button class="button is-success" data-event="saveResult">Save result</button></div>
         </div>`);
 
     }
@@ -316,11 +359,12 @@ function firstRound(){
     if(isTechnical){
       $('#games').append(`<div class="game-row">
         <span class="text-right"><label for="${result.docs[result.docs.length - 1]._id}">${result.docs[result.docs.length - 1].title}</label></span>
-        <span class="text-center lh-40"><input class="input -small" type="number" value="13" id="${result.docs[result.docs.length - 1]._id}" data-id="${result.docs[result.docs.length - 1]._id}" disabled/> vs <input class="input -small" type="number" value="7" id="tech" data-id="tech" disabled/></span>
+        <span class="text-center lh-40 score-block"><input class="input -small" type="number" value="13" id="${result.docs[result.docs.length - 1]._id}" data-id="${result.docs[result.docs.length - 1]._id}" disabled/> vs <input class="input -small" type="number" value="7" id="tech" data-id="tech" disabled/></span>
         <span><label for="tech">Technical</label></span>
-        <div class="text-center"><button class="button is-success" data-event="saveResult">Save result</button></div>
         </div>`);
     }
+  
+  $('#games').append('<div class="text-center"><button class="button is-success" data-event="saveResult">Save results</button></div>');
 
   });
 
@@ -409,27 +453,8 @@ function countTeamsBuhgolts(){
 }
 
 function nextRound() {
-  dbResults.get('currentMen', function(err, doc) {
-   if (err) {
-    return console.log(err);
-  } else {
-
-      let {_rev, men} = doc;
-    
-      men++;
-
-  $('#games').html('').append(`<h2 class="text-center">Round ${men}</h2>`)
-
-    doc = {
-      _id: 'currentMen',
-      _rev: _rev,
-      men: men
-    }
-
-    dbResults.put(doc);
-    }
-  
-});
+  $('#games').html('');
+  showRound();
     // Create index on two fields
   db.createIndex({
     index: {
@@ -447,20 +472,23 @@ function nextRound() {
       sort: [{wins: 'desc'}, {buhgolts: 'desc'}, {points: 'desc'}, {rating: 'desc'}]
     });
   }).then(function (response) {
-    $('#ranking').html('')
+    
+
+    $('#ranking').html('');
     $.each(response.docs, function(index){
   
     $('#ranking').append(`<tr data-id="${response.docs[index]._id}"><td><span class="count"></span></td>  <td>${response.docs[index].title}</td><td>${response.docs[index].wins}</td><td>${response.docs[index].buhgolts}</td><td>${response.docs[index].points}</td><td>${response.docs[index].rating}</td></tr>`);
   })
     
+    
     let teamList = response.docs;
-
+    
     const isTechnical = teamList.length % 2 === 1 ? true : false;
     const teamsLength = isTechnical ? teamList.length - 2 : teamList.length - 1;
-    console.log(isTechnical);
+    
     if (isTechnical) {
       let teamWithTechnical;
-      console.log(teamList);
+ 
 
       for(let i = teamList.length - 1; i > 0; i--){
        
@@ -475,48 +503,110 @@ function nextRound() {
 
         $('#games').append(`<div class="game-row">
           <span class="text-right"><label for="${teamWithTechnical._id}">${teamWithTechnical.title}</label></span>
-          <span class="text-center lh-40"><input class="input -small" type="number" value="13" id="${teamWithTechnical._id}" data-id="${teamWithTechnical._id}" disabled/> vs <input class="input -small" type="number" value="7" id="tech" data-id="tech" disabled/></span>
+          <span class="text-center lh-40 score-block"><input class="input -small" type="number" value="13" id="${teamWithTechnical._id}" data-id="${teamWithTechnical._id}" disabled/> vs <input class="input -small" type="number" value="7" id="tech" data-id="tech" disabled/></span>
           <span><label for="tech">Technical</label></span>
-          <div class="text-center"><button class="button is-success" data-event="saveResult">Save result</button></div>
           </div>`);  
      
     }
 
-    while(teamList.length){
-      drawPair(teamList);
-    }
+    let listForDraw = teamList;
+    
 
-    function drawPair(teamList){
+
+    /*while(listForDraw.length){
+      console.log(listForDraw);
+
+      drawPair(listForDraw);
+    }*/
+
+    for (let i = 0; i <= teamList.length/2; i++) {
+      console.log(i, teamList.length/2);
+        
+        if(drawPair(listForDraw) === false){
+          console.log(11111111);
+            let lastGame = $('#games').find('.game-row').last();
+            
+            lastGame.find('input').each(function(){
+              let curId = $(this).data('id');
+              
+              let found = teamList.find(function(element) {
+                return element._id === curId;
+              });
+              console.log(listForDraw);
+              found.drawed = false;
+              listForDraw.unshift(found);
+              console.log(listForDraw);
+
+            });
+            
+            lastGame.remove();
+            console.log(5465465465464);
+            drawPair(listForDraw, true);
+        };
+      }
+
+      $('#games').append('<div class="text-center"><button class="button is-success" data-event="saveResult">Save results</button></div>');
+
+    function drawPair(teamList, countFromDown){
       
-      let indexOwn = 0; 
+      if (!teamList.length) {
+        return false;
+      }
 
-      let indexOpponent = indexOwn + 1;
-
-      while(checkOpponent(teamList[indexOpponent]._id, teamList[indexOwn].opponents)){
+    let indexOwn, indexOpponent;
+      if (countFromDown) {
+        indexOwn = teamList.length - 1; 
+        indexOpponent = indexOwn - 1;
+      } else {
+        indexOwn = 0; 
+        indexOpponent = indexOwn + 1;
+      }
+      console.log(teamList[indexOpponent]._id);
+      if (teamList.length === 2 && checkOpponent(teamList[indexOpponent]._id, teamList[indexOwn].opponents)) {
+          return false
+      } else {
+        console.log(teamList, indexOpponent);
+        
+         while(checkOpponent(teamList[indexOpponent]._id, teamList[indexOwn].opponents)){
+            if (countFromDown) {
+              indexOpponent = indexOpponent - 1;
+            } else {
+              indexOpponent = indexOpponent + 1;  
+            }
+            
+          };
+      }
+    
+      
+      
+      /*while(checkOpponent(teamList[indexOpponent]._id, teamList[indexOwn].opponents)){
         indexOpponent++;
-      };
+      };*/
 
-      // while(checkOpponent(teamList[indexOpponent]._id, teamList[indexOwn].opponents)){
-      //   console.log("!!!They played!!!")
-      //   indexOpponent++;
-      // } 
-
-
-        $('#games').append(`<div class="game-row">
-          <span class="has-text-right"><label for="${teamList[indexOwn]._id}">${teamList[indexOwn].title}</label></span>
-          <span class="has-text-centered lh-40"><input class="input -small" type="number" id="${teamList[indexOwn]._id}" data-id="${teamList[indexOwn]._id}"/> vs 
-          <input class="input -small" type="number" id="${teamList[indexOpponent].title}" data-id="${teamList[indexOpponent]._id}"/></span>
-          <span><label for="${teamList[indexOpponent]._id}">${teamList[indexOpponent].title}</label></span>
-          <div class="has-text-centered"><button class="button is-success" data-event="saveResult">Save result</button></div>
-          </div>`);  
+    
+      $('#games').append(`<div class="game-row">
+        <span class="text-right"><label for="${teamList[indexOwn]._id}">${teamList[indexOwn].title}</label></span>
+        <span class="text-center lh-40 score-block"><input class="input -small" type="number" id="${teamList[indexOwn]._id}" data-id="${teamList[indexOwn]._id}"/> vs 
+        <input class="input -small" type="number" id="${teamList[indexOpponent]._id}" data-id="${teamList[indexOpponent]._id}"/></span>
+        <span><label for="${teamList[indexOpponent]._id}">${teamList[indexOpponent].title}</label></span>
+        </div>`);  
       
   
-      teamList.splice(indexOpponent,1);
+      // teamList.splice(indexOpponent,1);
  
-      teamList.splice(indexOwn,1);
+      // teamList.splice(indexOwn,1);
+
+      teamList[indexOpponent].drawed = true;
+      teamList[indexOwn].drawed = true;
+
+      listForDraw = teamList.filter(function(item) {
+        return item.drawed === undefined || item.drawed === false;
+      });
      
     }
   }).catch(function (err) {
+    console.log(err);
+    
     $('#games').append('<p class="text-center has-text-danger">Can\'t draw teams correctly. Maybe number of rounds to play is too mush for current teams number</p>')
   });
 }
