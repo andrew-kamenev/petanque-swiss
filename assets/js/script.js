@@ -130,7 +130,7 @@ $(document).on('click', '[data-event="removeTeam"]', function(){
   updateRound();
 }).on('click', '#importList', async function(){
   const tournamentId = $('#tournamentId').val();
-  let response = await fetch(`http://portal.petanque.org.ua/tournament/team_export/${tournamentId}?format=json`);
+  let response = await fetch(`https://portal.petanque.org.ua/tournament/team_export/${tournamentId}?format=json`);
 
 if (response.ok) {
   
