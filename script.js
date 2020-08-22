@@ -128,6 +128,22 @@ $(document).on('click', '[data-event="removeTeam"]', function(){
   })
   
   updateRound();
+}).on('click', '#importList', async function(){
+  const tournamentId = $('#tournamentId').val();
+  let response = await fetch(`http://portal.petanque.org.ua/tournament/team_export/${tournamentId}?format=json`);
+
+if (response.ok) {
+  
+  let importedList = await response.json();
+
+  $.each(importedList.teams,  function(index){
+      addTeam(importedList.teams[index].name, importedList.teams[index].power);
+  });
+
+
+} else {
+  alert("Ошибка HTTP: " + response.status);
+}
 });
 
 
@@ -326,13 +342,17 @@ function showTeams() {
 
 function showTeam(teams){
   $.each(teams, function(index){
-    $('#list').append(`<tr data-id="${teams[index]._id}"><td>${teams[index].title}</td><td class="td-100">${teams[index].rating}</td><td class="td-50"><a class="delete" data-event="removeTeam"></a></td></tr>`);
+    const id = teams[index]._id || teams[index].id;
+    const title = teams[index].title || teams[index].name;
+    const rating = teams[index].rating || teams[index].power;
+    $('#list').append(`<tr data-id="${id}"><td>${title}</td><td class="td-100">${rating}</td><td class="td-50"><a class="delete" data-event="removeTeam"></a></td></tr>`);
   })
 }
 
 
 function firstRound(){
   showRound();
+  $('#addTeam').hide();
 
   db.find({
     selector: {
