@@ -137,7 +137,7 @@ if (response.ok) {
   let importedList = await response.json();
 
   $.each(importedList.teams,  function(index){
-      addTeam(importedList.teams[index].name, importedList.teams[index].power);
+      addTeam(importedList.teams[index].name, +importedList.teams[index].power);
   });
 
 
