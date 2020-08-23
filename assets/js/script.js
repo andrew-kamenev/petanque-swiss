@@ -102,7 +102,7 @@ $(document).on('click', '[data-event="removeTeam"]', function(){
     const scoreSelf = parseInt($(teams[index]).val());
     const scoreOpponent = parseInt($(teams[sign]).val());
     const win = scoreSelf > scoreOpponent ? true : false;
-    if(!scoreSelf || !scoreOpponent || scoreOpponent === scoreSelf){
+    if(isNaN(scoreSelf) || isNaN(scoreOpponent) || scoreOpponent === scoreSelf){
 
       validation = false
       return false;
