@@ -10,7 +10,7 @@
 </head>
 <body>
 	<div class="container ">
-		<h1 class="title is-1 text-center">Petanque - swiss system <sup>Version Alpha</sup></h1>
+		<h1 class="title is-1 text-center">Petanque - swiss system <sup>Version Beta</sup></h1>
 		<div class="columns">
 			<div class="column">
 				<div class="tabs">
@@ -22,35 +22,31 @@
 					</ul>
 				</div>
 				<div class="content tabs-content" id="teamsBlock">	
-					<div class="field is-grouped">
-					
-						<div class="control">
-							<input class="input" type="number" id="tournamentId" placeholder="Tournament ID">
+					<div class="add-teams">
+						<div class="field is-grouped">
+							<div class="control">
+								<input class="input" type="number" id="tournamentId" placeholder="Tournament ID">
+							</div>
+							<div class="control">
+								<button class="button is-success" id="importList">Import from portal</button>
+							</div>
 						</div>
-						<div class="control">
-							<button class="button is-success" id="importList">Import from portal</button>
-						</div>
-					</div>
-					
-					<div class="field is-grouped add-team-field">
-						<div class="control">
-							<input class="input" type="text" id="team" placeholder="Team title">
-						</div>
-						<div class="control">
-							<input class="input -rating" type="number" id="rating" placeholder="Rating">
-						</div>
-						<div class="control">
-							<button class="button is-success" id="addTeam">Add team</button>
+						
+						<div class="field is-grouped add-team-field">
+							<div class="control">
+								<input class="input" type="text" id="team" placeholder="Team title">
+							</div>
+							<div class="control">
+								<input class="input -rating" type="number" id="rating" placeholder="Rating">
+							</div>
+							<div class="control">
+								<button class="button is-success" id="addTeam">Add team</button>
+							</div>
 						</div>
 					</div>
 					<table id="list" class="table"></table>
 					<div class="field is-grouped">	
-				<!-- 	<div class="control">
-					<button class="button" id="count">Count rating</button>
-				</div>
-				<div class="control">
-					<button class="button" id="showResults">Show results</button>
-				</div> -->
+			
 					<div class="control">
 						<button class="button is-danger" id="removeList">Remove db</button>
 					</div>
@@ -64,10 +60,10 @@
 							<input class="input" type="text" id="rounds" placeholder="Number of rounds">
 						</div> -->
 						<div class="control">	
-							<button class="button is-info" id="drawRound">First Round</button>
+							<button class="button is-info" id="drawRound">Draw Round</button>
 						</div>
 						<div class="control">	
-							<button class="button is-info" id="nextRound">Next Round</button>
+							<button class="button is-info" id="nextRound">Draw Round</button>
 						</div> 
 					</div>	
 					<div id="games"></div>
