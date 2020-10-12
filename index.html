@@ -9,93 +9,96 @@
 	<link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
-	<div class="container ">
-		<h1 class="title is-1 text-center">Petanque - swiss system <sup>Version Beta</sup></h1>
-		<div class="columns">
-			<div class="column">
-				<div class="tabs">
-					<ul>
-						<li class="is-active"><a href="#teamsBlock">Teams</a></li>
-						<li><a href="#gamesBlock">Games</a></li>
-						<li><a href="#resultsBlock" id="showResults">Results</a></li>
-						<li><a href="#rankingBlock" id="countRanking">Ranking</a></li>
-					</ul>
-				</div>
-				<div class="content tabs-content" id="teamsBlock">	
-					<div class="add-teams">
+	<div class="wrapper">
+		<div class="container ">
+			<h1 class="title is-1 text-center">Petanque - swiss system <sup>Version Beta</sup></h1>
+			<div class="columns">
+				<div class="column">
+					<div class="tabs">
+						<ul>
+							<li class="is-active"><a href="#teamsBlock">Teams</a></li>
+							<li><a href="#gamesBlock">Games</a></li>
+							<li><a href="#resultsBlock" id="showResults">Results</a></li>
+							<li><a href="#rankingBlock" id="countRanking">Ranking</a></li>
+						</ul>
+					</div>
+					<div class="content tabs-content" id="teamsBlock">	
+						<div class="add-teams">
+							<div class="field is-grouped">
+								<div class="control">
+									<input class="input" type="number" id="tournamentId" placeholder="Tournament ID">
+								</div>
+								<div class="control">
+									<button class="button is-success" id="importList">Import from portal</button>
+								</div>
+							</div>
+							
+							<div class="field is-grouped add-team-field">
+								<div class="control">
+									<input class="input" type="text" id="team" placeholder="Team title">
+								</div>
+								<div class="control">
+									<input class="input -rating" type="number" id="rating" placeholder="Rating">
+								</div>
+								<div class="control">
+									<button class="button is-success" id="addTeam">Add team</button>
+								</div>
+							</div>
+						</div>
+						<table id="list" class="table"></table>
+						<div class="field is-grouped">	
+				
+						<div class="control">
+							<button class="button is-danger" id="removeList">Remove db</button>
+						</div>
+					</div>
+					</div>
+
+
+					<div class="content tabs-content" id="gamesBlock">
 						<div class="field is-grouped">
-							<div class="control">
-								<input class="input" type="number" id="tournamentId" placeholder="Tournament ID">
+							<!-- <div class="control">	
+								<input class="input" type="text" id="rounds" placeholder="Number of rounds">
+							</div> -->
+							<div class="control">	
+								<button class="button is-info" id="drawRound">Draw Round</button>
 							</div>
-							<div class="control">
-								<button class="button is-success" id="importList">Import from portal</button>
-							</div>
-						</div>
-						
-						<div class="field is-grouped add-team-field">
-							<div class="control">
-								<input class="input" type="text" id="team" placeholder="Team title">
-							</div>
-							<div class="control">
-								<input class="input -rating" type="number" id="rating" placeholder="Rating">
-							</div>
-							<div class="control">
-								<button class="button is-success" id="addTeam">Add team</button>
-							</div>
-						</div>
+							<div class="control">	
+								<button class="button is-info" id="nextRound">Draw Round</button>
+							</div> 
+						</div>	
+						<div id="games"></div>
 					</div>
-					<table id="list" class="table"></table>
-					<div class="field is-grouped">	
-			
-					<div class="control">
-						<button class="button is-danger" id="removeList">Remove db</button>
+					
+					<div class="content tabs-content" id="resultsBlock">	
+						<table id="results" class="table"></table>
 					</div>
+
+					<div class="content tabs-content" id="rankingBlock">	
+						<table class="table">
+							<thead>	<tr>
+								<th>#</th>
+								<th>Team</th>
+								<th>Wins</th>
+								<th>Buh</th>
+								<th>mBuh</th>
+								<th>Points</th>
+								<th>Rating</th>
+							</tr></thead>
+							<tbody id="ranking"></tbody>
+						</table>
+					</div>
+
+					
 				</div>
+				<div class="column is-one-third">
+					<img src="assets/img/bg.jpg" alt="" class="image">
 				</div>
 
-
-				<div class="content tabs-content" id="gamesBlock">
-					<div class="field is-grouped">
-						<!-- <div class="control">	
-							<input class="input" type="text" id="rounds" placeholder="Number of rounds">
-						</div> -->
-						<div class="control">	
-							<button class="button is-info" id="drawRound">Draw Round</button>
-						</div>
-						<div class="control">	
-							<button class="button is-info" id="nextRound">Draw Round</button>
-						</div> 
-					</div>	
-					<div id="games"></div>
-				</div>
-				
-				<div class="content tabs-content" id="resultsBlock">	
-					<table id="results" class="table"></table>
-				</div>
-
-				<div class="content tabs-content" id="rankingBlock">	
-					<table class="table">
-						<thead>	<tr>
-							<th>#</th>
-							<th>Team</th>
-							<th>Wins</th>
-							<th>Buh</th>
-							<th>mBuh</th>
-							<th>Points</th>
-							<th>Rating</th>
-						</tr></thead>
-						<tbody id="ranking"></tbody>
-					</table>
-				</div>
-
-				
-			</div>
-			<div class="column is-one-third">
-				<img src="assets/img/bg.jpg" alt="" class="image">
 			</div>
 
 		</div>
-
+		<footer>&copy; <a href="mailto:ancam1987@gmail.com">Andrii Kameniev</a> 2020</footer>
 	</div>
 	<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 	<script src="assets/js/pouchdb-7.2.1.min.js"></script>
