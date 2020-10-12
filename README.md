@@ -1,1 +1,1 @@
-# petanque-swiss
+# Programm for drawing teams based on swiss system
